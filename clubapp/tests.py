@@ -76,3 +76,19 @@ class GetEventsTest(TestCase):
     def test_view_url_accessible(self):
         response = self.client.get(reverse("events"))
         self.assertEqual(response.status_code, 200)
+
+class New_Meeting_authentication_test(TestCase):
+    def setUp(self):
+        self.test_user = User.objects.create_user(username = 'testuser1', password = 'P@ssw0rd1')
+        self.type = Meeting.objects.create(meetingtitle = "Fun Meeting", meetingdate = "2019-04-03", meetingtime = "11:00", location = "USA", agenda = "Stuff.")
+
+    def test_redirect_if_not_logged_in(self):
+        response = self.client.get(reverse('newmeeting'))
+        self.assertRedirects(response, '/accounts/login/?next=/clubapp/newMeeting/')
+
+    def test_Logged_in_uses_correct_template(self):
+        login = self.client.login(username = 'testuser1', password = 'P@ssw0rd1')
+        response = self.client.get(reverse('newmeeting'))
+        self.assertEqual(str(response.context['user']), 'testuser1')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'clubapp/newmeeting.html')
